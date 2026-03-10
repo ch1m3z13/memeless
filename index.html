@@ -1,1735 +1,836 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>$MEMELESS — The Meme With No Meme</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --black: #050505;
-    --white: #f5f5f0;
-    --void: #0a0a0a;
-    --accent: #00ff88;
-    --red: #ff2244;
-    --dim: #333;
-    --mid: #888;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'Space Mono', monospace;
-    overflow-x: hidden;
-    cursor: crosshair;
-  }
-
-  /* NOISE OVERLAY */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.5;
-  }
-
-  /* HEADER / TICKER */
-  .ticker-bar {
-    background: var(--accent);
-    color: var(--black);
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    font-size: 0.72rem;
-    padding: 6px 0;
-    overflow: hidden;
-    white-space: nowrap;
-    letter-spacing: 0.05em;
-  }
-
-  .ticker-inner {
-    display: inline-block;
-    animation: ticker 25s linear infinite;
-  }
-
-  @keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  /* NAV */
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.2rem 3rem;
-    border-bottom: 1px solid var(--dim);
-    position: sticky;
-    top: 0;
-    background: rgba(5,5,5,0.95);
-    backdrop-filter: blur(10px);
-    z-index: 100;
-  }
-
-  .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-  }
-
-  .nav-logo span { color: var(--white); }
-
-  .nav-links {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .nav-links a {
-    color: var(--mid);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .nav-links a:hover { color: var(--accent); }
-
-  .nav-cta {
-    background: var(--accent);
-    color: var(--black);
-    border: none;
-    padding: 0.5rem 1.4rem;
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-
-  .nav-cta:hover {
-    background: var(--white);
-    transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0 var(--accent);
-  }
-
-  /* HERO */
-  .hero {
-    min-height: 88vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 5rem 3rem 3rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-grid-bg {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--dim) 1px, transparent 1px),
-      linear-gradient(90deg, var(--dim) 1px, transparent 1px);
-    background-size: 60px 60px;
-    opacity: 0.08;
-  }
-
-  .hero-tag {
-    font-size: 0.72rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 0.3rem 0.8rem;
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    animation: fadein 0.6s ease both;
-  }
-
-  .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(5rem, 16vw, 14rem);
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    animation: fadein 0.8s 0.1s ease both;
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-title .glitch {
-    position: relative;
-    color: var(--accent);
-  }
-
-  .hero-title .glitch::before,
-  .hero-title .glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: var(--accent);
-  }
-
-  .hero-title .glitch::before {
-    animation: glitch1 3s infinite;
-    color: var(--red);
-    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
-  }
-
-  .hero-title .glitch::after {
-    animation: glitch2 3s infinite;
-    color: #00ccff;
-    clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
-  }
-
-  @keyframes glitch1 {
-    0%, 90%, 100% { transform: translate(0); }
-    92% { transform: translate(-4px, 2px); }
-    94% { transform: translate(4px, -2px); }
-    96% { transform: translate(0); }
-  }
-
-  @keyframes glitch2 {
-    0%, 88%, 100% { transform: translate(0); }
-    90% { transform: translate(4px, 1px); }
-    92% { transform: translate(-3px, -1px); }
-    94% { transform: translate(0); }
-  }
-
-  .hero-sub {
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
-    color: var(--mid);
-    margin-top: 1.5rem;
-    max-width: 600px;
-    line-height: 1.6;
-    animation: fadein 0.8s 0.25s ease both;
-  }
-
-  .hero-sub strong { color: var(--white); }
-
-  .hero-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2.5rem;
-    flex-wrap: wrap;
-    animation: fadein 0.8s 0.4s ease both;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--black);
-    border: none;
-    padding: 0.85rem 2rem;
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.15s;
-  }
-
-  .btn-primary:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: 6px 6px 0 rgba(0,255,136,0.3);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--white);
-    border: 1px solid var(--dim);
-    padding: 0.85rem 2rem;
-    font-family: 'Courier Prime', monospace;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.15s;
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--white);
-    transform: translate(-3px, -3px);
-    box-shadow: 6px 6px 0 var(--dim);
-  }
-
-  .hero-scroll-hint {
-    position: absolute;
-    bottom: 2rem;
-    right: 3rem;
-    font-size: 0.7rem;
-    color: var(--dim);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    writing-mode: vertical-rl;
-    animation: blink 2s infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
-
-  /* ADDRESS BAR */
-  .address-bar {
-    margin: 3rem;
-    margin-top: 0;
-    background: var(--void);
-    border: 1px solid var(--dim);
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.75rem;
-    animation: fadein 0.8s 0.5s ease both;
-  }
-
-  .address-label {
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    white-space: nowrap;
-    font-weight: 700;
-  }
-
-  .address-text {
-    color: var(--mid);
-    word-break: break-all;
-    font-family: 'Courier Prime', monospace;
-  }
-
-  .copy-btn {
-    background: var(--dim);
-    color: var(--white);
-    border: none;
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-    font-family: 'Courier Prime', monospace;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    white-space: nowrap;
-    transition: all 0.15s;
-    letter-spacing: 0.05em;
-  }
-
-  .copy-btn:hover { background: var(--accent); color: var(--black); }
-
-  /* MANIFESTO SECTION */
-  .section { padding: 5rem 3rem; border-top: 1px solid var(--dim); }
-
-  .section-label {
-    font-size: 0.68rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 2rem;
-  }
-
-  .manifesto {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  .manifesto-left h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 5rem);
-    line-height: 1;
-    letter-spacing: 0.02em;
-    margin-bottom: 2rem;
-  }
-
-  .manifesto-left h2 em {
-    color: var(--accent);
-    font-style: normal;
-  }
-
-  .manifesto-stmts {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .stmt {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: var(--mid);
-    border-left: 2px solid var(--dim);
-    padding-left: 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .stmt:hover { border-color: var(--accent); color: var(--white); }
-
-  /* WHITE PAPER */
-  .whitepaper-box {
-    border: 1px solid var(--dim);
-    padding: 2rem;
-    background: var(--void);
-  }
-
-  .whitepaper-title {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--mid);
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .whitepaper-badge {
-    background: var(--red);
-    color: var(--white);
-    font-size: 0.6rem;
-    padding: 0.2rem 0.5rem;
-    letter-spacing: 0.1em;
-  }
-
-  .whitepaper-doc {
-    background: white;
-    width: 100%;
-    aspect-ratio: 3/4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .whitepaper-doc::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: white;
-  }
-
-  .whitepaper-doc-label {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    font-size: 0.6rem;
-    color: #ddd;
-    letter-spacing: 0.1em;
-    z-index: 1;
-    font-family: 'Courier Prime', monospace;
-  }
-
-  .whitepaper-caption {
-    font-size: 0.7rem;
-    color: var(--mid);
-    margin-top: 1rem;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  .whitepaper-caption em {
-    color: var(--accent);
-    font-style: normal;
-  }
-
-  /* STATS */
-  .stats-section {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--dim);
-    border: 1px solid var(--dim);
-    margin: 0 3rem;
-  }
-
-  .stat-card {
-    background: var(--void);
-    padding: 2rem;
-    text-align: center;
-    transition: background 0.2s;
-  }
-
-  .stat-card:hover { background: #111; }
-
-  .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3.5rem;
-    color: var(--accent);
-    line-height: 1;
-    display: block;
-  }
-
-  .stat-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin-top: 0.5rem;
-    display: block;
-  }
-
-  /* COMMUNITY FEED */
-  .feed-section { padding: 5rem 3rem; border-top: 1px solid var(--dim); }
-
-  .feed-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--dim);
-    margin-top: 2rem;
-  }
-
-  .feed-card {
-    background: var(--void);
-    padding: 1.5rem;
-    transition: background 0.2s;
-    position: relative;
-  }
-
-  .feed-card:hover { background: #0f0f0f; }
-
-  .feed-handle {
-    font-size: 0.7rem;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    margin-bottom: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .feed-handle::before {
-    content: '●';
-    font-size: 0.5rem;
-    color: var(--accent);
-  }
-
-  .feed-text {
-    font-size: 0.85rem;
-    line-height: 1.7;
-    color: var(--mid);
-  }
-
-  .feed-text strong { color: var(--white); }
-
-  .feed-meta {
-    margin-top: 1rem;
-    font-size: 0.65rem;
-    color: var(--dim);
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  /* TOKENOMICS */
-  .token-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    padding: 5rem 3rem;
-    border-top: 1px solid var(--dim);
-  }
-
-  .token-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 4vw, 4rem);
-    margin-bottom: 2rem;
-    line-height: 1;
-  }
-
-  .token-rows { display: flex; flex-direction: column; gap: 0; }
-
-  .token-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--dim);
-    font-size: 0.82rem;
-    transition: all 0.15s;
-  }
-
-  .token-row:hover { padding-left: 0.5rem; color: var(--accent); }
-
-  .token-key { color: var(--mid); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; }
-
-  .token-val { color: var(--white); font-family: 'Courier Prime', monospace; font-weight: 700; }
-
-  .token-disclaimer {
-    border: 1px solid var(--dim);
-    padding: 1.5rem;
-    margin-top: 2rem;
-    background: var(--void);
-  }
-
-  .disclaimer-title {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--red);
-    margin-bottom: 0.8rem;
-  }
-
-  .disclaimer-text {
-    font-size: 0.72rem;
-    color: var(--mid);
-    line-height: 1.7;
-  }
-
-  /* JOIN CTA */
-  .cta-section {
-    padding: 6rem 3rem;
-    border-top: 1px solid var(--dim);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cta-bg-text {
-    position: absolute;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 25vw;
-    color: rgba(255,255,255,0.015);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    white-space: nowrap;
-    letter-spacing: -0.05em;
-  }
-
-  .cta-section h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(3rem, 8vw, 7rem);
-    letter-spacing: 0.02em;
-    line-height: 1;
-    position: relative;
-  }
-
-  .cta-section p {
-    color: var(--mid);
-    font-size: 0.9rem;
-    margin: 1.5rem 0 2.5rem;
-    line-height: 1.7;
-    position: relative;
-  }
-
-  .cta-section .btn-primary { position: relative; }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--dim);
-    padding: 2rem 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.68rem;
-    color: var(--dim);
-    letter-spacing: 0.08em;
-  }
-
-  footer a { color: var(--dim); text-decoration: none; }
-  footer a:hover { color: var(--accent); }
-
-  /* ANIMATIONS */
-  @keyframes fadein {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-
-  .reveal.visible { opacity: 1; transform: none; }
-
-  /* BLINKING CURSOR */
-  .cursor {
-    display: inline-block;
-    width: 0.6em;
-    height: 1em;
-    background: var(--accent);
-    vertical-align: text-bottom;
-    margin-left: 4px;
-    animation: blink 1s infinite;
-  }
-
-  /* MOBILE */
-  @media (max-width: 768px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links { display: none; }
-    .hero { padding: 3rem 1.5rem; }
-    .address-bar { margin: 1.5rem; flex-wrap: wrap; }
-    .section { padding: 3rem 1.5rem; }
-    .manifesto { grid-template-columns: 1fr; gap: 2rem; }
-    .stats-section { grid-template-columns: repeat(2, 1fr); margin: 0 1.5rem; }
-    .feed-grid { grid-template-columns: 1fr; }
-    .token-section { grid-template-columns: 1fr; padding: 3rem 1.5rem; }
-    .cta-section { padding: 4rem 1.5rem; }
-    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
-  }
-</style>
-</head>
-<body>
-
-<!-- TICKER -->
-<div class="ticker-bar">
-  <span class="ticker-inner">
-    $MEMELESS ▲ 0.00069 &nbsp;|&nbsp; EVERY MEME IS DONE &nbsp;|&nbsp; EVERY COIN IS VAMPED &nbsp;|&nbsp; THE MEME WITH NO MEME &nbsp;|&nbsp; SEND THE MEME THAT HAS NO MEME &nbsp;|&nbsp; IT'S NOT A BEAR MARKET — IT'S A $MEMELESS MARKET &nbsp;|&nbsp; WHITE PAPER OUT NOW &nbsp;|&nbsp; $MEMELESS ▲ 0.00069 &nbsp;|&nbsp; EVERY MEME IS DONE &nbsp;|&nbsp; EVERY COIN IS VAMPED &nbsp;|&nbsp; THE MEME WITH NO MEME &nbsp;|&nbsp; SEND THE MEME THAT HAS NO MEME &nbsp;|&nbsp; IT'S NOT A BEAR MARKET — IT'S A $MEMELESS MARKET &nbsp;|&nbsp; WHITE PAPER OUT NOW &nbsp;&nbsp;
-  </span>
-</div>
-
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">$<span>MEMELESS</span></div>
-  <ul class="nav-links">
-    <li><a href="#manifesto">Manifesto</a></li>
-    <li><a href="#whitepaper">White Paper</a></li>
-    <li><a href="#tokenomics">Tokenomics</a></li>
-    <li><a href="#community">Community</a></li>
-  </ul>
-  <a class="nav-cta" href="https://dexscreener.com/solana/8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump" target="_blank" style="margin-right:0.5rem; background:transparent; color:var(--accent); border:1px solid var(--accent);">📈 Chart</a>
-  <a class="nav-cta" href="https://twitter.com/i/communities/2030531442493538497" target="_blank">Join Community</a>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-grid-bg"></div>
-  <div class="hero-tag">🚫 No meme. No utility. No roadmap. Just vibes.</div>
-  <h1 class="hero-title">
-    <span class="glitch" data-text="MEME">MEME</span>LESS<span class="cursor"></span>
-  </h1>
-  <p class="hero-sub">
-    Every meme is done.<br>
-    Every coin is vamped.<br>
-    <strong>So we sent the meme that actually has no meme.</strong>
-  </p>
-  <div class="hero-actions">
-    <a href="https://twitter.com/i/communities/2030531442493538497" target="_blank" class="btn-primary">Join the void →</a>
-    <a href="https://dexscreener.com/solana/8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump" target="_blank" class="btn-secondary">📈 Dexscreener</a>
-    <a href="#whitepaper" class="btn-secondary">Read White Paper</a>
-  </div>
-  <div class="hero-scroll-hint">scroll down</div>
-</section>
-
-<!-- CONTRACT ADDRESS -->
-<div class="address-bar">
-  <span class="address-label">CA</span>
-  <span class="address-text" id="ca-text">8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump</span>
-  <button class="copy-btn" onclick="copyCA()">Copy</button>
-</div>
-
-<!-- STATS -->
-<div class="stats-section reveal">
-  <div class="stat-card">
-    <span class="stat-num">0</span>
-    <span class="stat-label">Memes in the Whitepaper</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-num">∞</span>
-    <span class="stat-label">Cope per holder</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-num" id="views-count">13K</span>
-    <span class="stat-label">Community Post Views</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-num">1</span>
-    <span class="stat-label">Idea (It's nothing)</span>
-  </div>
-</div>
-
-<!-- MANIFESTO -->
-<section class="section" id="manifesto">
-  <div class="section-label">§ 001 — The Manifesto</div>
-  <div class="manifesto">
-    <div class="manifesto-left reveal">
-      <h2>It's not a<br><em>bear market.</em><br>It's a<br><em>$memeless</em><br>market.</h2>
-    </div>
-    <div class="manifesto-stmts reveal">
-      <div class="stmt">
-        Every meme coin you know? Done. Exhausted. A vampire sucked dry by early buyers and dev wallets.
-      </div>
-      <div class="stmt">
-        We looked at the landscape and thought: what if the meme... was that there's no meme?
-      </div>
-      <div class="stmt">
-        No dog. No frog. No president. No AI agent. No lore. No roadmap. No utility.
-        Just the glorious, empty void where a meme used to be.
-      </div>
-      <div class="stmt">
-        <strong style="color: var(--white)">$MEMELESS is the most honest meme coin ever made. It promises absolutely nothing. And it delivers.</strong>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHITE PAPER -->
-<section class="section" id="whitepaper">
-  <div class="section-label">§ 002 — The White Paper</div>
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start;">
-    <div class="reveal">
-      <h2 style="font-family:'Bebas Neue',sans-serif; font-size: clamp(2rem,4vw,3.5rem); margin-bottom: 1.5rem; line-height:1;">
-        Our Groundbreaking<br>Research Document
-      </h2>
-      <p style="color:var(--mid); font-size:0.85rem; line-height:1.8; margin-bottom: 1rem;">
-        We spent months crafting a white paper that explains the tokenomics & thesis behind $MEMELES    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.5;
-  }
-
-  /* HEADER / TICKER */
-  .ticker-bar {
-    background: var(--accent);
-    color: var(--black);
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    font-size: 0.72rem;
-    padding: 6px 0;
-    overflow: hidden;
-    white-space: nowrap;
-    letter-spacing: 0.05em;
-  }
-
-  .ticker-inner {
-    display: inline-block;
-    animation: ticker 25s linear infinite;
-  }
-
-  @keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  /* NAV */
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.2rem 3rem;
-    border-bottom: 1px solid var(--dim);
-    position: sticky;
-    top: 0;
-    background: rgba(5,5,5,0.95);
-    backdrop-filter: blur(10px);
-    z-index: 100;
-  }
-
-  .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-  }
-
-  .nav-logo span { color: var(--white); }
-
-  .nav-links {
-    display: flex;
-    gap: 2rem;
-    list-style: none;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .nav-links a {
-    color: var(--mid);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .nav-links a:hover { color: var(--accent); }
-
-  .nav-cta {
-    background: var(--accent);
-    color: var(--black);
-    border: none;
-    padding: 0.5rem 1.4rem;
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-
-  .nav-cta:hover {
-    background: var(--white);
-    transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0 var(--accent);
-  }
-
-  /* HERO */
-  .hero {
-    min-height: 88vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 5rem 3rem 3rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-grid-bg {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--dim) 1px, transparent 1px),
-      linear-gradient(90deg, var(--dim) 1px, transparent 1px);
-    background-size: 60px 60px;
-    opacity: 0.08;
-  }
-
-  .hero-tag {
-    font-size: 0.72rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 0.3rem 0.8rem;
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    animation: fadein 0.6s ease both;
-  }
-
-  .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(5rem, 16vw, 14rem);
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    animation: fadein 0.8s 0.1s ease both;
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-title .glitch {
-    position: relative;
-    color: var(--accent);
-  }
-
-  .hero-title .glitch::before,
-  .hero-title .glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: var(--accent);
-  }
-
-  .hero-title .glitch::before {
-    animation: glitch1 3s infinite;
-    color: var(--red);
-    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
-  }
-
-  .hero-title .glitch::after {
-    animation: glitch2 3s infinite;
-    color: #00ccff;
-    clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
-  }
-
-  @keyframes glitch1 {
-    0%, 90%, 100% { transform: translate(0); }
-    92% { transform: translate(-4px, 2px); }
-    94% { transform: translate(4px, -2px); }
-    96% { transform: translate(0); }
-  }
-
-  @keyframes glitch2 {
-    0%, 88%, 100% { transform: translate(0); }
-    90% { transform: translate(4px, 1px); }
-    92% { transform: translate(-3px, -1px); }
-    94% { transform: translate(0); }
-  }
-
-  .hero-sub {
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
-    color: var(--mid);
-    margin-top: 1.5rem;
-    max-width: 600px;
-    line-height: 1.6;
-    animation: fadein 0.8s 0.25s ease both;
-  }
-
-  .hero-sub strong { color: var(--white); }
-
-  .hero-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2.5rem;
-    flex-wrap: wrap;
-    animation: fadein 0.8s 0.4s ease both;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--black);
-    border: none;
-    padding: 0.85rem 2rem;
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.15s;
-  }
-
-  .btn-primary:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: 6px 6px 0 rgba(0,255,136,0.3);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--white);
-    border: 1px solid var(--dim);
-    padding: 0.85rem 2rem;
-    font-family: 'Courier Prime', monospace;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    text-transform: uppercase;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.15s;
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--white);
-    transform: translate(-3px, -3px);
-    box-shadow: 6px 6px 0 var(--dim);
-  }
-
-  .hero-scroll-hint {
-    position: absolute;
-    bottom: 2rem;
-    right: 3rem;
-    font-size: 0.7rem;
-    color: var(--dim);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    writing-mode: vertical-rl;
-    animation: blink 2s infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
-
-  /* ADDRESS BAR */
-  .address-bar {
-    margin: 3rem;
-    margin-top: 0;
-    background: var(--void);
-    border: 1px solid var(--dim);
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.75rem;
-    animation: fadein 0.8s 0.5s ease both;
-  }
-
-  .address-label {
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    white-space: nowrap;
-    font-weight: 700;
-  }
-
-  .address-text {
-    color: var(--mid);
-    word-break: break-all;
-    font-family: 'Courier Prime', monospace;
-  }
-
-  .copy-btn {
-    background: var(--dim);
-    color: var(--white);
-    border: none;
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-    font-family: 'Courier Prime', monospace;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    white-space: nowrap;
-    transition: all 0.15s;
-    letter-spacing: 0.05em;
-  }
-
-  .copy-btn:hover { background: var(--accent); color: var(--black); }
-
-  /* MANIFESTO SECTION */
-  .section { padding: 5rem 3rem; border-top: 1px solid var(--dim); }
-
-  .section-label {
-    font-size: 0.68rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 2rem;
-  }
-
-  .manifesto {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  .manifesto-left h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 5rem);
-    line-height: 1;
-    letter-spacing: 0.02em;
-    margin-bottom: 2rem;
-  }
-
-  .manifesto-left h2 em {
-    color: var(--accent);
-    font-style: normal;
-  }
-
-  .manifesto-stmts {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .stmt {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: var(--mid);
-    border-left: 2px solid var(--dim);
-    padding-left: 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .stmt:hover { border-color: var(--accent); color: var(--white); }
-
-  /* WHITE PAPER */
-  .whitepaper-box {
-    border: 1px solid var(--dim);
-    padding: 2rem;
-    background: var(--void);
-  }
-
-  .whitepaper-title {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--mid);
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .whitepaper-badge {
-    background: var(--red);
-    color: var(--white);
-    font-size: 0.6rem;
-    padding: 0.2rem 0.5rem;
-    letter-spacing: 0.1em;
-  }
-
-  .whitepaper-doc {
-    background: white;
-    width: 100%;
-    aspect-ratio: 3/4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .whitepaper-doc::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: white;
-  }
-
-  .whitepaper-doc-label {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    font-size: 0.6rem;
-    color: #ddd;
-    letter-spacing: 0.1em;
-    z-index: 1;
-    font-family: 'Courier Prime', monospace;
-  }
-
-  .whitepaper-caption {
-    font-size: 0.7rem;
-    color: var(--mid);
-    margin-top: 1rem;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  .whitepaper-caption em {
-    color: var(--accent);
-    font-style: normal;
-  }
-
-  /* STATS */
-  .stats-section {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--dim);
-    border: 1px solid var(--dim);
-    margin: 0 3rem;
-  }
-
-  .stat-card {
-    background: var(--void);
-    padding: 2rem;
-    text-align: center;
-    transition: background 0.2s;
-  }
-
-  .stat-card:hover { background: #111; }
-
-  .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3.5rem;
-    color: var(--accent);
-    line-height: 1;
-    display: block;
-  }
-
-  .stat-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin-top: 0.5rem;
-    display: block;
-  }
-
-  /* COMMUNITY FEED */
-  .feed-section { padding: 5rem 3rem; border-top: 1px solid var(--dim); }
-
-  .feed-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--dim);
-    margin-top: 2rem;
-  }
-
-  .feed-card {
-    background: var(--void);
-    padding: 1.5rem;
-    transition: background 0.2s;
-    position: relative;
-  }
-
-  .feed-card:hover { background: #0f0f0f; }
-
-  .feed-handle {
-    font-size: 0.7rem;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    margin-bottom: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .feed-handle::before {
-    content: '●';
-    font-size: 0.5rem;
-    color: var(--accent);
-  }
-
-  .feed-text {
-    font-size: 0.85rem;
-    line-height: 1.7;
-    color: var(--mid);
-  }
-
-  .feed-text strong { color: var(--white); }
-
-  .feed-meta {
-    margin-top: 1rem;
-    font-size: 0.65rem;
-    color: var(--dim);
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  /* TOKENOMICS */
-  .token-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    padding: 5rem 3rem;
-    border-top: 1px solid var(--dim);
-  }
-
-  .token-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 4vw, 4rem);
-    margin-bottom: 2rem;
-    line-height: 1;
-  }
-
-  .token-rows { display: flex; flex-direction: column; gap: 0; }
-
-  .token-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--dim);
-    font-size: 0.82rem;
-    transition: all 0.15s;
-  }
-
-  .token-row:hover { padding-left: 0.5rem; color: var(--accent); }
-
-  .token-key { color: var(--mid); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; }
-
-  .token-val { color: var(--white); font-family: 'Courier Prime', monospace; font-weight: 700; }
-
-  .token-disclaimer {
-    border: 1px solid var(--dim);
-    padding: 1.5rem;
-    margin-top: 2rem;
-    background: var(--void);
-  }
-
-  .disclaimer-title {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--red);
-    margin-bottom: 0.8rem;
-  }
-
-  .disclaimer-text {
-    font-size: 0.72rem;
-    color: var(--mid);
-    line-height: 1.7;
-  }
-
-  /* JOIN CTA */
-  .cta-section {
-    padding: 6rem 3rem;
-    border-top: 1px solid var(--dim);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cta-bg-text {
-    position: absolute;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 25vw;
-    color: rgba(255,255,255,0.015);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    white-space: nowrap;
-    letter-spacing: -0.05em;
-  }
-
-  .cta-section h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(3rem, 8vw, 7rem);
-    letter-spacing: 0.02em;
-    line-height: 1;
-    position: relative;
-  }
-
-  .cta-section p {
-    color: var(--mid);
-    font-size: 0.9rem;
-    margin: 1.5rem 0 2.5rem;
-    line-height: 1.7;
-    position: relative;
-  }
-
-  .cta-section .btn-primary { position: relative; }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--dim);
-    padding: 2rem 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.68rem;
-    color: var(--dim);
-    letter-spacing: 0.08em;
-  }
-
-  footer a { color: var(--dim); text-decoration: none; }
-  footer a:hover { color: var(--accent); }
-
-  /* ANIMATIONS */
-  @keyframes fadein {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-
-  .reveal.visible { opacity: 1; transform: none; }
-
-  /* BLINKING CURSOR */
-  .cursor {
-    display: inline-block;
-    width: 0.6em;
-    height: 1em;
-    background: var(--accent);
-    vertical-align: text-bottom;
-    margin-left: 4px;
-    animation: blink 1s infinite;
-  }
-
-  /* MOBILE */
-  @media (max-width: 768px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links { display: none; }
-    .hero { padding: 3rem 1.5rem; }
-    .address-bar { margin: 1.5rem; flex-wrap: wrap; }
-    .section { padding: 3rem 1.5rem; }
-    .manifesto { grid-template-columns: 1fr; gap: 2rem; }
-    .stats-section { grid-template-columns: repeat(2, 1fr); margin: 0 1.5rem; }
-    .feed-grid { grid-template-columns: 1fr; }
-    .token-section { grid-template-columns: 1fr; padding: 3rem 1.5rem; }
-    .cta-section { padding: 4rem 1.5rem; }
-    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
-  }
-</style>
-</head>
-<body>
-
-<!-- TICKER -->
-<div class="ticker-bar">
-  <span class="ticker-inner">
-    $MEMELESS ▲ 0.00069 &nbsp;|&nbsp; EVERY MEME IS DONE &nbsp;|&nbsp; EVERY COIN IS VAMPED &nbsp;|&nbsp; THE MEME WITH NO MEME &nbsp;|&nbsp; SEND THE MEME THAT HAS NO MEME &nbsp;|&nbsp; IT'S NOT A BEAR MARKET — IT'S A $MEMELESS MARKET &nbsp;|&nbsp; WHITE PAPER OUT NOW &nbsp;|&nbsp; $MEMELESS ▲ 0.00069 &nbsp;|&nbsp; EVERY MEME IS DONE &nbsp;|&nbsp; EVERY COIN IS VAMPED &nbsp;|&nbsp; THE MEME WITH NO MEME &nbsp;|&nbsp; SEND THE MEME THAT HAS NO MEME &nbsp;|&nbsp; IT'S NOT A BEAR MARKET — IT'S A $MEMELESS MARKET &nbsp;|&nbsp; WHITE PAPER OUT NOW &nbsp;&nbsp;
-  </span>
-</div>
-
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">$<span>MEMELESS</span></div>
-  <ul class="nav-links">
-    <li><a href="#manifesto">Manifesto</a></li>
-    <li><a href="#whitepaper">White Paper</a></li>
-    <li><a href="#tokenomics">Tokenomics</a></li>
-    <li><a href="#community">Community</a></li>
-  </ul>
-  <a class="nav-cta" href="https://dexscreener.com/solana/8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump" target="_blank" style="margin-right:0.5rem; background:transparent; color:var(--accent); border:1px solid var(--accent);">📈 Chart</a>
-  <a class="nav-cta" href="https://twitter.com/i/communities/2030531442493538497" target="_blank">Join Community</a>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-grid-bg"></div>
-  <div class="hero-tag">🚫 No meme. No utility. No roadmap. Just vibes.</div>
-  <h1 class="hero-title">
-    <span class="glitch" data-text="MEME">MEME</span>LESS<span class="cursor"></span>
-  </h1>
-  <p class="hero-sub">
-    Every meme is done.<br>
-    Every coin is vamped.<br>
-    <strong>So we sent the meme that actually has no meme.</strong>
-  </p>
-  <div class="hero-actions">
-    <a href="https://twitter.com/i/communities/2030531442493538497" target="_blank" class="btn-primary">Join the void →</a>
-    <a href="https://dexscreener.com/solana/8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump" target="_blank" class="btn-secondary">📈 Dexscreener</a>
-    <a href="#whitepaper" class="btn-secondary">Read White Paper</a>
-  </div>
-  <div class="hero-scroll-hint">scroll down</div>
-</section>
-
-<!-- CONTRACT ADDRESS -->
-<div class="address-bar">
-  <span class="address-label">CA</span>
-  <span class="address-text" id="ca-text">8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump</span>
-  <button class="copy-btn" onclick="copyCA()">Copy</button>
-</div>
-
-<!-- STATS -->
-<div class="stats-section reveal">
-  <div class="stat-card">
-    <span class="stat-num">0</span>
-    <span class="stat-label">Memes in the Whitepaper</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-num">∞</span>
-    <span class="stat-label">Cope per holder</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-num" id="views-count">13K</span>
-    <span class="stat-label">Community Post Views</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-num">1</span>
-    <span class="stat-label">Idea (It's nothing)</span>
-  </div>
-</div>
-
-<!-- MANIFESTO -->
-<section class="section" id="manifesto">
-  <div class="section-label">§ 001 — The Manifesto</div>
-  <div class="manifesto">
-    <div class="manifesto-left reveal">
-      <h2>It's not a<br><em>bear market.</em><br>It's a<br><em>$memeless</em><br>market.</h2>
-    </div>
-    <div class="manifesto-stmts reveal">
-      <div class="stmt">
-        Every meme coin you know? Done. Exhausted. A vampire sucked dry by early buyers and dev wallets.
-      </div>
-      <div class="stmt">
-        We looked at the landscape and thought: what if the meme... was that there's no meme?
-      </div>
-      <div class="stmt">
-        No dog. No frog. No president. No AI agent. No lore. No roadmap. No utility.
-        Just the glorious, empty void where a meme used to be.
-      </div>
-      <div class="stmt">
-        <strong style="color: var(--white)">$MEMELESS is the most honest meme coin ever made. It promises absolutely nothing. And it delivers.</strong>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHITE PAPER -->
-<section class="section" id="whitepaper">
-  <div class="section-label">§ 002 — The White Paper</div>
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start;">
-    <div class="reveal">
-      <h2 style="font-family:'Bebas Neue',sans-serif; font-size: clamp(2rem,4vw,3.5rem); margin-bottom: 1.5rem; line-height:1;">
-        Our Groundbreaking<br>Research Document
-      </h2>
-      <p style="color:var(--mid); font-size:0.85rem; line-height:1.8; margin-bottom: 1rem;">
-        We spent months crafting a white paper that explains the tokenomics & thesis behind $MEMELESS in excruciating detail.
-      </p>
-      <p style="color:var(--mid); font-size:0.85rem; line-height:1.8; margin-bottom: 1rem;">
-        After extensive peer review and deliberation, the team agreed the document was perfect exactly as written.
-      </p>
-      <p style="color:var(--accent); font-size:0.85rem; line-height:1.8;">
-        Hope you like it.
-      </p>
-    </div>
-    <div class="whitepaper-box reveal">
-      <div class="whitepaper-title">
-        <span>$MEMELESS — Official White Paper v1.0</span>
-        <span class="whitepaper-badge">FINAL</span>
-      </div>
-      <div class="whitepaper-doc">
-        <span class="whitepaper-doc-label">PAGE 1 OF 1</span>
-      </div>
-      <p class="whitepaper-caption">
-        <em>Figure 1: The complete tokenomics & thesis.</em><br>
-        Peer reviewed. Institutionally backed. Absolutely nothing.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- COMMUNITY FEED -->
-<section class="feed-section" id="community">
-  <div class="section-label">§ 003 — Community Alpha</div>
-  <h2 class="reveal" style="font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,4vw,3.5rem); margin-bottom:0.5rem; line-height:1;">What The Believers Say</h2>
-  <div class="feed-grid reveal">
-    <div class="feed-card">
-      <div class="feed-handle">@ihodlmemez ✓</div>
-      <p class="feed-text">Wrote a white paper explaining the tokenomics & thesis.<br><br><strong>Hope you like it.</strong></p>
-      <div class="feed-meta"><span>♥ 34</span><span>↺ 7</span><span>👁 1.2K</span></div>
-    </div>
-    <div class="feed-card">
-      <div class="feed-handle">@alexzabv ✓ · Admin</div>
-      <p class="feed-text">It's not a bear market.<br><br><strong>It's a $memeless market.</strong></p>
-      <div class="feed-meta"><span>♥ 28</span><span>↺ 3</span><span>👁 2.4K</span></div>
-    </div>
-    <div class="feed-card">
-      <div class="feed-handle">@redwithbag ✓</div>
-      <p class="feed-text"><strong>dex?</strong></p>
-      <div class="feed-meta"><span>♥ 33</span><span>↺ 1</span><span>👁 2.3K</span></div>
-    </div>
-    <div class="feed-card">
-      <div class="feed-handle">Community Post · memeless</div>
-      <p class="feed-text">we're officially in a <strong>$memeless</strong> market<br><br>every meme is done.<br>every coin is vamped.<br><br>send the meme that actually has no meme.</p>
-      <div class="feed-meta"><span>♥ 98</span><span>↺ 20</span><span>👁 13K</span></div>
-    </div>
-    <div class="feed-card" style="display:flex; flex-direction:column; justify-content:center; align-items:center; min-height:180px; border: 1px dashed var(--dim);">
-      <p style="color:var(--dim); font-size:0.75rem; text-align:center; letter-spacing:0.1em; text-transform:uppercase;">Your take could be here.<br><br><a href="https://twitter.com/i/communities/2030531442493538497" target="_blank" style="color:var(--accent); text-decoration:none;">Join the community →</a></p>
-    </div>
-    <div class="feed-card" style="background: repeating-linear-gradient(45deg, var(--void) 0, var(--void) 10px, #0d0d0d 10px, #0d0d0d 20px);">
-      <div class="feed-handle">CLASSIFIED</div>
-      <p class="feed-text" style="filter:blur(4px); user-select:none;">Alpha you're not ready for. Join the community to unlock the void.</p>
-      <div class="feed-meta"><span>♥ ???</span><span>↺ ???</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- TOKENOMICS -->
-<div class="token-section" id="tokenomics">
-  <div class="reveal">
-    <div class="section-label">§ 004 — Tokenomics</div>
-    <h2 class="token-title">The Numbers<br><em style="color:var(--accent)">Don't Lie.</em><br>(They don't say much either.)</h2>
-    <div class="token-rows">
-      <div class="token-row">
-        <span class="token-key">Network</span>
-        <span class="token-val">Solana</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Token Symbol</span>
-        <span class="token-val">$MEMELESS</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Total Supply</span>
-        <span class="token-val">1,000,000,000</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Team Allocation</span>
-        <span class="token-val">0%</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Marketing Budget</span>
-        <span class="token-val">This page</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Roadmap Items</span>
-        <span class="token-val">—</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Utility</span>
-        <span class="token-val">Being memeless</span>
-      </div>
-      <div class="token-row">
-        <span class="token-key">Launched via</span>
-        <span class="token-val">pump.fun</span>
-      </div>
-    </div>
-  </div>
-  <div class="reveal">
-    <div class="token-disclaimer">
-      <div class="disclaimer-title">⚠ Risk Disclosure</div>
-      <p class="disclaimer-text">
-        $MEMELESS is a meme coin with no intrinsic value or expectation of financial return.
-        The entire thesis is that there is no thesis. The white paper is blank.
-        The roadmap does not exist. Past performance of other meme coins is not indicative
-        of future returns of this one, which also has no meme. Please do your own research,
-        and by research we mean read our white paper. You're done.
-        <br><br>
-        This is not financial advice. This is barely a website.
-      </p>
-    </div>
-    <div style="border:1px solid var(--dim); padding:2rem; margin-top:1px; background:var(--void);">
-      <div class="disclaimer-title" style="color:var(--accent);">Contract Address</div>
-      <p style="font-family:'Courier Prime',monospace; font-size:0.68rem; color:var(--mid); word-break:break-all; line-height:1.8;">
-        8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- JOIN CTA -->
-<section class="cta-section">
-  <div class="cta-bg-text">VOID</div>
-  <h2 class="reveal">JOIN THE<br><span style="color:var(--accent)">VOID.</span></h2>
-  <p class="reveal">A community for people who've seen every meme.<br>Bought every coin. Got vamped every time.<br>And still showed up.</p>
-  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="reveal">
-    <a href="https://twitter.com/i/communities/2030531442493538497" target="_blank" class="btn-primary">→ Join on X / Twitter</a>
-    <a href="https://dexscreener.com/solana/8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump" target="_blank" class="btn-secondary">📈 View on Dexscreener</a>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div>© 2026 $MEMELESS — All rights reserved. (There's nothing to reserve.)</div>
-  <div style="display:flex;gap:2rem;">
-    <a href="https://twitter.com/i/communities/2030531442493538497" target="_blank">X Community</a>
-    <a href="#whitepaper">White Paper</a>
-    <a href="#tokenomics">Tokenomics</a>
-  </div>
-</footer>
-
-<script>
-  // Scroll reveal
-  const reveals = document.querySelectorAll('.reveal');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach((e, i) => {
-      if (e.isIntersecting) {
-        setTimeout(() => e.target.classList.add('visible'), i * 80);
-        obs.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  reveals.forEach(el => obs.observe(el));
-
-  // Copy CA
-  function copyCA() {
-    const ca = '8PfLjXu3ETFARUiCsjfwNgj77GUehXZ5co19ZbsEpump';
-    navigator.clipboard.writeText(ca).then(() => {
-      const btn = document.querySelector('.copy-btn');
-      btn.textContent = 'Copied!';
-      btn.style.background = 'var(--accent)';
-      btn.style.color = 'var(--black)';
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-        btn.style.background = 'var(--dim)';
-        btn.style.color = 'var(--white)';
-      }, 2000);
-    });
-  }
-
-  // Random glitch flash on hero
-  setInterval(() => {
-    if (Math.random() > 0.7) {
-      document.body.style.filter = 'hue-rotate(5deg) brightness(1.03)';
-      setTimeout(() => document.body.style.filter = '', 80);
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$nomemeleft — 404 MEME NOT FOUND | on Base</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --white: #f0ede8;
+      --black: #0a0a0a;
+      --red: #e63232;
+      --grey: #c8c4be;
+      --darkgrey: #1a1a1a;
+      --mid: #2e2e2e;
     }
-  }, 4000);
-</script>
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: 'IBM Plex Mono', monospace;
+      cursor: crosshair;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    /* ── HEADER BAR ── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 32px;
+      background: var(--white);
+      border-bottom: 1.5px solid var(--black);
+      z-index: 100;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .topbar-ticker { font-weight: 700; font-size: 13px; }
+    .topbar-status {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .topbar-nav { display: flex; gap: 28px; }
+    .topbar-nav a {
+      text-decoration: none;
+      color: var(--black);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .topbar-nav a:hover { opacity: 1; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 120px 60px 80px;
+      position: relative;
+      border-bottom: 1.5px solid var(--black);
+    }
+
+    .hero-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.3s;
+    }
+
+    .hero-404 {
+      font-family: 'VT323', monospace;
+      font-size: clamp(140px, 22vw, 320px);
+      line-height: 0.85;
+      color: var(--black);
+      position: relative;
+      margin-bottom: 16px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.5s;
+    }
+
+    /* Glitch effect */
+    .hero-404 .glitch {
+      position: relative;
+      display: inline-block;
+    }
+    .hero-404 .glitch::before,
+    .hero-404 .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      font-family: 'VT323', monospace;
+    }
+    .hero-404 .glitch::before {
+      color: var(--red);
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+      animation: glitch1 3.5s infinite;
+    }
+    .hero-404 .glitch::after {
+      color: #1a6bff;
+      clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+      animation: glitch2 3.5s infinite;
+    }
+
+    @keyframes glitch1 {
+      0%, 85%, 100% { transform: none; opacity: 0; }
+      86% { transform: translateX(-4px); opacity: 0.8; }
+      88% { transform: translateX(4px); opacity: 0.8; }
+      90% { transform: none; opacity: 0; }
+    }
+    @keyframes glitch2 {
+      0%, 85%, 100% { transform: none; opacity: 0; }
+      87% { transform: translateX(5px); opacity: 0.7; }
+      89% { transform: translateX(-3px); opacity: 0.7; }
+      91% { transform: none; opacity: 0; }
+    }
+
+    .hero-sub {
+      font-family: 'VT323', monospace;
+      font-size: clamp(22px, 4vw, 52px);
+      letter-spacing: 0.06em;
+      color: var(--black);
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.7s;
+    }
+
+    .hero-desc {
+      max-width: 520px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #555;
+      margin-bottom: 52px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.9s;
+    }
+
+    .hero-desc strong { color: var(--black); font-weight: 700; }
+
+    .hero-actions {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 1.1s;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 36px;
+      background: var(--black);
+      color: var(--white);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1.5px solid var(--black);
+      transition: background 0.18s, color 0.18s, transform 0.12s;
+    }
+    .btn-primary:hover { background: var(--red); border-color: var(--red); transform: translateY(-2px); }
+
+    .btn-ghost {
+      display: inline-block;
+      padding: 14px 36px;
+      background: transparent;
+      color: var(--black);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1.5px solid var(--black);
+      transition: background 0.18s, color 0.18s, transform 0.12s;
+    }
+    .btn-ghost:hover { background: var(--black); color: var(--white); transform: translateY(-2px); }
+
+    .hero-corner-label {
+      position: absolute;
+      bottom: 32px; right: 40px;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--grey);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+    }
+
+    /* ── TICKER TAPE ── */
+    .ticker-wrap {
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
+      padding: 10px 0;
+      border-bottom: 1.5px solid var(--black);
+    }
+    .ticker-inner {
+      display: flex;
+      gap: 0;
+      animation: scroll 22s linear infinite;
+      white-space: nowrap;
+    }
+    .ticker-item {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      letter-spacing: 0.1em;
+      padding: 0 40px;
+      flex-shrink: 0;
+    }
+    .ticker-item span { color: var(--red); margin-right: 8px; }
+    @keyframes scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ── SECTION BASE ── */
+    section { border-bottom: 1.5px solid var(--black); }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 12px;
+    }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat-cell {
+      padding: 48px 40px;
+      border-right: 1.5px solid var(--black);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    .stat-cell:hover::after { transform: scaleX(1); }
+
+    .stat-value {
+      font-family: 'VT323', monospace;
+      font-size: 64px;
+      line-height: 1;
+      margin-bottom: 8px;
+      color: var(--black);
+    }
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #888;
+    }
+
+    /* ── WHY ── */
+    .why-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .why-left {
+      padding: 80px 60px;
+      border-right: 1.5px solid var(--black);
+    }
+    .why-right { padding: 80px 60px; }
+
+    .why-heading {
+      font-family: 'VT323', monospace;
+      font-size: clamp(48px, 6vw, 88px);
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    .reason-list { list-style: none; }
+    .reason-list li {
+      padding: 20px 0;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #444;
+    }
+    .reason-list li:first-child { border-top: none; padding-top: 0; }
+    .reason-num {
+      font-family: 'VT323', monospace;
+      font-size: 28px;
+      color: var(--red);
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: -4px;
+    }
+
+    /* ── TERMINAL BLOCK ── */
+    .terminal-section {
+      background: var(--black);
+      padding: 80px 60px;
+    }
+
+    .terminal-window {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .terminal-bar {
+      background: #2a2a2a;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+    .terminal-title { font-size: 11px; color: #888; margin-left: auto; letter-spacing: 0.1em; }
+
+    .terminal-body {
+      padding: 28px 32px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 2;
+    }
+    .t-prompt { color: var(--red); }
+    .t-cmd { color: #f0ede8; }
+    .t-out { color: #78c280; }
+    .t-err { color: var(--red); }
+    .t-dim { color: #555; }
+    .t-cursor {
+      display: inline-block;
+      width: 9px; height: 14px;
+      background: #f0ede8;
+      vertical-align: middle;
+      animation: blink 0.9s step-end infinite;
+    }
+
+    /* ── TOKENOMICS ── */
+    .token-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .token-left {
+      padding: 80px 60px;
+      border-right: 1.5px solid var(--black);
+    }
+    .token-right { padding: 80px 60px; }
+
+    .token-heading {
+      font-family: 'VT323', monospace;
+      font-size: clamp(48px, 5vw, 72px);
+      margin-bottom: 48px;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-top: 1px solid #ddd;
+      font-size: 12px;
+    }
+    .token-row:first-of-type { border-top: none; }
+    .token-row-label { color: #777; letter-spacing: 0.1em; }
+    .token-row-val { font-weight: 700; font-size: 14px; }
+
+    .bar-chart { margin-top: 40px; }
+    .bar-item { margin-bottom: 20px; }
+    .bar-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+      color: #555;
+    }
+    .bar-track {
+      height: 6px;
+      background: #e0ddd8;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--black);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: fillBar 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fillBar { to { transform: scaleX(1); } }
+    .bar-fill.red { background: var(--red); animation-delay: 0.15s; }
+    .bar-fill.grey { background: #aaa; animation-delay: 0.3s; }
+
+    /* ── MANIFESTO ── */
+    .manifesto {
+      padding: 120px 60px;
+      background: var(--black);
+      color: var(--white);
+      text-align: center;
+    }
+    .manifesto-pre {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 32px;
+    }
+    .manifesto-text {
+      font-family: 'VT323', monospace;
+      font-size: clamp(28px, 4vw, 52px);
+      line-height: 1.4;
+      max-width: 820px;
+      margin: 0 auto 60px;
+      color: var(--white);
+    }
+    .manifesto-text em { color: var(--red); font-style: normal; }
+
+    /* ── HOW TO BUY ── */
+    .buy-section { padding: 80px 60px; }
+    .buy-heading {
+      font-family: 'VT323', monospace;
+      font-size: clamp(48px, 5vw, 72px);
+      margin-bottom: 60px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+    .step {
+      padding: 0 32px 0 0;
+      border-right: 1.5px solid var(--black);
+      margin-right: 32px;
+    }
+    .step:last-child { border-right: none; margin-right: 0; }
+    .step-num {
+      font-family: 'VT323', monospace;
+      font-size: 72px;
+      color: #ddd;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .step-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .step-desc {
+      font-size: 11px;
+      line-height: 1.8;
+      color: #666;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 60px;
+      background: var(--black);
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    footer span { color: var(--red); }
+    .footer-disclaimer {
+      width: 100%;
+      padding-top: 20px;
+      border-top: 1px solid #222;
+      font-size: 9px;
+      color: #333;
+      line-height: 1.8;
+      letter-spacing: 0.08em;
+      text-transform: none;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-cell:nth-child(2) { border-right: none; }
+      .stat-cell:nth-child(3) { border-right: 1.5px solid var(--black); border-top: 1.5px solid var(--black); }
+      .stat-cell:nth-child(4) { border-right: none; border-top: 1.5px solid var(--black); }
+      .why-section, .token-section { grid-template-columns: 1fr; }
+      .why-left, .token-left { border-right: none; border-bottom: 1.5px solid var(--black); }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); gap: 40px; }
+      .step { border-right: none; margin-right: 0; padding-right: 0; }
+      .hero { padding: 100px 28px 60px; }
+      .topbar { padding: 12px 20px; }
+      .topbar-nav { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .stat-cell { border-right: none !important; border-top: 1.5px solid var(--black); }
+      .stat-cell:first-child { border-top: none; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .buy-section, .why-left, .why-right, .token-left, .token-right, .manifesto { padding: 60px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-ticker">$nomemeleft</div>
+    <div class="topbar-status">
+      <div class="status-dot"></div>
+      <span style="font-size:10px; letter-spacing:0.15em; color:#888;">LIVE ON BASE · FLAUNCH</span>
+    </div>
+    <nav class="topbar-nav">
+      <a href="#why">Why</a>
+      <a href="#tokenomics">Tokenomics</a>
+      <a href="#buy">Buy</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">⚠ &nbsp;ERROR — CRITICAL MEME SHORTAGE DETECTED</div>
+    <div class="hero-404">
+      <span class="glitch" data-text="404">404</span>
+    </div>
+    <div class="hero-sub">MEME NOT FOUND</div>
+    <p class="hero-desc">
+      <strong>$nomemeleft</strong> — The market is bone dry. Every meme has been minted, milked, and abandoned. This is the last one standing…<br>
+      because there's literally <strong>nothing else.</strong>
+    </p>
+    <div class="hero-actions">
+      <a href="#buy" class="btn-primary">Buy on Takeover</a>
+      <a href="#why" class="btn-ghost">Why This Exists</a>
+    </div>
+    <div class="hero-corner-label">Base · Flaunch · $nomemeleft</div>
+  </section>
+
+  <!-- TICKER TAPE -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <!-- Two copies for seamless loop -->
+      <div class="ticker-item"><span>$nomemeleft</span>404 MEME NOT FOUND</div>
+      <div class="ticker-item"><span>//</span>MARKET IS EMPTY</div>
+      <div class="ticker-item"><span>$nomemeleft</span>LAST ONE STANDING</div>
+      <div class="ticker-item"><span>//</span>PLEASE SEND MEMES</div>
+      <div class="ticker-item"><span>$nomemeleft</span>404 MEME NOT FOUND</div>
+      <div class="ticker-item"><span>//</span>THIS IS FINE</div>
+      <div class="ticker-item"><span>$nomemeleft</span>NOTHING ELSE LEFT</div>
+      <div class="ticker-item"><span>//</span>BUY OR REGRET</div>
+      <!-- Duplicate -->
+      <div class="ticker-item"><span>$nomemeleft</span>404 MEME NOT FOUND</div>
+      <div class="ticker-item"><span>//</span>MARKET IS EMPTY</div>
+      <div class="ticker-item"><span>$nomemeleft</span>LAST ONE STANDING</div>
+      <div class="ticker-item"><span>//</span>PLEASE SEND MEMES</div>
+      <div class="ticker-item"><span>$nomemeleft</span>404 MEME NOT FOUND</div>
+      <div class="ticker-item"><span>//</span>THIS IS FINE</div>
+      <div class="ticker-item"><span>$nomemeleft</span>NOTHING ELSE LEFT</div>
+      <div class="ticker-item"><span>//</span>BUY OR REGRET</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <section>
+    <div class="stats-grid">
+      <div class="stat-cell reveal">
+        <div class="section-label">Supply</div>
+        <div class="stat-value">1B</div>
+        <div class="stat-label">Total tokens — all of them</div>
+      </div>
+      <div class="stat-cell reveal" style="transition-delay:0.1s">
+        <div class="section-label">Memes left</div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">In the entire market. None.</div>
+      </div>
+      <div class="stat-cell reveal" style="transition-delay:0.2s">
+        <div class="section-label">Competitors</div>
+        <div class="stat-value">404</div>
+        <div class="stat-label">Not found. Checked twice.</div>
+      </div>
+      <div class="stat-cell reveal" style="transition-delay:0.3s">
+        <div class="section-label">Tax</div>
+        <div class="stat-value">0%</div>
+        <div class="stat-label">Buy / sell — no games</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="why-section" id="why">
+    <div class="why-left reveal">
+      <div class="section-label">The Thesis</div>
+      <div class="why-heading">WHY<br>$NOME<br>MELEFT?</div>
+      <p style="font-size:13px; line-height:1.9; color:#555; max-width:380px;">
+        Every meme market goes through a cycle. Doge. Shib. Pepe. Wojak. Brett. The market got greedy, minted everything, and now the shelves are bare. <strong style="color:var(--black)">$nomemeleft is the last meme standing</strong> — and the only honest one.
+      </p>
+    </div>
+    <div class="why-right">
+      <ul class="reason-list">
+        <li class="reveal">
+          <div class="reason-num">01</div>
+          <div>
+            <div style="font-size:12px; font-weight:700; margin-bottom:4px;">META SELF-AWARENESS</div>
+            It knows it's a meme about no memes. That's the bit. That IS the meme.
+          </div>
+        </li>
+        <li class="reveal" style="transition-delay:0.1s">
+          <div class="reason-num">02</div>
+          <div>
+            <div style="font-size:12px; font-weight:700; margin-bottom:4px;">BRAND IS BURNED IN</div>
+            404. Everyone knows it. Everyone has felt it. The whole internet is the audience.
+          </div>
+        </li>
+        <li class="reveal" style="transition-delay:0.2s">
+          <div class="reason-num">03</div>
+          <div>
+            <div style="font-size:12px; font-weight:700; margin-bottom:4px;">PERFECTLY TIMED NIHILISM</div>
+            The market is exhausted. People want a coin that admits it — and laughs about it.
+          </div>
+        </li>
+        <li class="reveal" style="transition-delay:0.3s">
+          <div class="reason-num">04</div>
+          <div>
+            <div style="font-size:12px; font-weight:700; margin-bottom:4px;">LAST MEME ALIVE</div>
+            By definition, there can only be one "404 meme not found." That's us. There's no sequel.
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TERMINAL -->
+  <section class="terminal-section">
+    <div class="terminal-window reveal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="terminal-title">meme_scanner.exe</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-prompt">root@base ~ $</span> <span class="t-cmd">scan_meme_market --chain base</span></div>
+        <div class="t-dim">Initializing scanner...</div>
+        <div class="t-dim">Querying 14,892 tokens...</div>
+        <div class="t-dim">Checking originality index...</div>
+        <div>&nbsp;</div>
+        <div class="t-err">ERROR: Meme database returned 0 results</div>
+        <div class="t-err">ERROR: Originality score below threshold (0.0001)</div>
+        <div class="t-err">ERROR: All available meme slots are occupied or rugged</div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">root@base ~ $</span> <span class="t-cmd">find_last_viable_meme --launchpad flaunch</span></div>
+        <div>&nbsp;</div>
+        <div class="t-out">FOUND: $nomemeleft</div>
+        <div class="t-out">Chain: Base · Launchpad: Flaunch · App: Takeover</div>
+        <div class="t-out">Status: LAST MEME ALIVE ✓</div>
+        <div class="t-out">Recommendation: OPEN TAKEOVER APP NOW</div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">root@base ~ $</span> <span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOKENOMICS -->
+  <section class="token-section" id="tokenomics">
+    <div class="token-left reveal">
+      <div class="section-label">Tokenomics</div>
+      <div class="token-heading">THE SUPPLY.<br>ALL OF IT.</div>
+
+      <div class="token-row">
+        <span class="token-row-label">Total supply</span>
+        <span class="token-row-val">1,000,000,000</span>
+      </div>
+      <div class="token-row">
+        <span class="token-row-label">Ticker</span>
+        <span class="token-row-val">$nomemeleft</span>
+      </div>
+      <div class="token-row">
+        <span class="token-row-label">Network</span>
+        <span class="token-row-val">Base</span>
+      </div>
+      <div class="token-row">
+        <span class="token-row-label">Buy tax</span>
+        <span class="token-row-val">0%</span>
+      </div>
+      <div class="token-row">
+        <span class="token-row-label">Sell tax</span>
+        <span class="token-row-val">0%</span>
+      </div>
+      <div class="token-row">
+        <span class="token-row-label">LP</span>
+        <span class="token-row-val">Burned 🔥</span>
+      </div>
+      <div class="token-row">
+        <span class="token-row-label">Contract</span>
+        <span class="token-row-val" style="font-size:10px; color:#999">Renounced</span>
+      </div>
+    </div>
+    <div class="token-right reveal" style="transition-delay:0.15s">
+      <div class="section-label">Distribution</div>
+      <div style="font-family:'VT323',monospace; font-size:48px; margin-bottom:40px;">FAIR.<br>SIMPLE.<br>CLEAN.</div>
+      <div class="bar-chart">
+        <div class="bar-item">
+          <div class="bar-label-row"><span>Liquidity Pool</span><span>80%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:80%; animation-duration:1.4s;"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label-row"><span>Marketing & Dev</span><span>15%</span></div>
+          <div class="bar-track"><div class="bar-fill red" style="width:15%;"></div></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label-row"><span>Team (Locked 12mo)</span><span>5%</span></div>
+          <div class="bar-track"><div class="bar-fill grey" style="width:5%;"></div></div>
+        </div>
+      </div>
+      <p style="font-size:11px; color:#888; margin-top:32px; line-height:1.8;">
+        No insider dumps. No shadow wallets. No presale nonsense. Just a clean launch, a dead meme market, and one last coin to buy.
+      </p>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto">
+    <div class="manifesto-pre">// Manifesto</div>
+    <div class="manifesto-text">
+      "The meme well is dry. The market has seen <em>10,000 dogs</em>, <em>8,000 frogs</em>, and <em>enough AI coins</em> to make your eyes bleed. We're not here with a new idea. We're here with the <em>only honest one left</em> — we admit there's nothing else. And somehow, that's everything."
+    </div>
+    <a href="#buy" class="btn-primary" style="background:var(--red); border-color:var(--red);">Get It On Takeover →</a>
+  </section>
+
+  <!-- HOW TO BUY -->
+  <section class="buy-section" id="buy">
+    <div class="section-label">How To Buy</div>
+    <div class="buy-heading reveal">GET $NOMEMELEFT</div>
+    <div class="steps-grid">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-title">GET THE BASE APP</div>
+        <div class="step-desc">Download the Coinbase / Base app on your phone. This is where the Takeover mini app lives — no desktop needed.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.1s">
+        <div class="step-num">02</div>
+        <div class="step-title">OPEN TAKEOVER</div>
+        <div class="step-desc">Inside the Base app, find the <strong>Takeover</strong> mini app. It's powered by Flaunch — the launchpad built for Base memecoins.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.2s">
+        <div class="step-num">03</div>
+        <div class="step-title">FIND $NOMEMELEFT</div>
+        <div class="step-desc">Search for <strong>$nomemeleft</strong> or paste the contract address. Confirm it's the 404 MEME NOT FOUND token.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.3s">
+        <div class="step-num">04</div>
+        <div class="step-title">HOLD THE LAST MEME</div>
+        <div class="step-desc">Swap ETH for $nomemeleft and welcome yourself to the end of the meme market. There's nothing else to buy.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>© 2025 <span>$nomemeleft</span></div>
+    <div>404 MEME NOT FOUND · BASE</div>
+    <div style="color:#333;">CA: [TBA ON LAUNCH]</div>
+    <div class="footer-disclaimer">
+      $nomemeleft is a meme coin launched on Base via the Flaunch launchpad through the Takeover mini app. It has no intrinsic value or expectation of financial return. This is not financial advice. Crypto assets are highly volatile and speculative. Never invest more than you can afford to lose. Not affiliated with Coinbase, Base, or any HTTP error standard.
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>
